@@ -32,7 +32,7 @@ test("returns email address of Employee", () => {
   );
 });
 
-test("returns role which should be 'Employee'", () => {
+test("returns role which should be 'Employee' or whatever the child class's role is", () => {
   const employee = new Employee("James", "Jamesbond@gmail.com");
 
   expect(employee.getRole()).toEqual(
