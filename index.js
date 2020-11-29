@@ -1,1 +1,5 @@
-const inquirer = require("inquirer");
+const Prompter = require("/lib/Prompter.js");
+
+const start = new Prompter();
+
+start.start();
