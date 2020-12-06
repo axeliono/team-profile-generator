@@ -1,10 +1,5 @@
 const fs = require("fs");
-const {
-  generateTeam,
-  generateManager,
-  generateInterns,
-  generateEngineers,
-} = require("./utils/generated-page");
+const generateTeam = require("./utils/generated-page");
 const inquirer = require("inquirer");
 const Engineer = require("./lib/Engineer");
 const Intern = require("./lib/Intern");
@@ -12,10 +7,15 @@ const Manager = require("./lib/Manager");
 
 class Prompter {
   constructor() {
-    this.employees = [];
+    this.employees = {
+      manager: [],
+      engineers: [],
+      interns: [],
+    };
   }
-  startPrompt() {
-    inquirer
+
+  async startPrompt() {
+    await inquirer
       .prompt([
         {
           name: "managerName",
@@ -42,13 +42,13 @@ class Prompter {
         const manager = new Manager(output.managerName, output.email);
         manager.officeNumber = output.officeNumber;
         manager.id = output.employeeId;
-        this.employees.push(manager);
+        this.employees.manager.push(manager);
         this.nextPrompt();
       });
   }
 
-  engineerPrompt() {
-    inquirer.prompt([
+  async engineerPrompt() {
+    await inquirer.prompt([
       {
         name: "name",
         type: "input",
@@ -70,37 +70,16 @@ class Prompter {
         message: "Enter engineer's github",
       },
     ]);
-    console.table(this.employees.manager);
-    if (this.employees.interns) {
-      console.table(this.employees.interns);
-    }
-    if (this.employees.engineers) {
-      console.table(this.employees.engineers);
-    }
-    inquirer
-      .prompt({
-        name: "next",
-        type: "list",
-        message:
-          "Would you like to add an intern, add an engineer, or finish making team?",
-        choices: ["add intern", "add engineer", "finish making team"],
-        validate: (choice) => {
-          return choice ? true : (console.log("Please make a choice"), false);
-        },
-      })
-      .then((output) => {
-        if (output.next === "add intern") {
-          this.internPrompt();
-        } else if (output.next === "add engineer") {
-          this.engineerPrompt();
-        } else {
-          return generateTeam(this.employees);
-        }
-      });
+    const engineer = new Engineer(output.name, output.email);
+    engineer.github = output.github;
+    engineer.id = output.id;
+    this.employees.engineers.push(engineer);
+    console.table(this.employees);
+    this.nextPrompt();
   }
 
-  internPrompt() {
-    inquirer
+  async internPrompt() {
+    await inquirer
       .prompt([
         {
           name: "name",
@@ -127,48 +106,51 @@ class Prompter {
         const intern = new Intern(output.name, output.email);
         intern.id = output.id;
         intern.school = output.school;
-        this.employees.push(intern);
-        console.table(this.employees.manager);
-        if (this.employees.interns) {
-          console.table(this.employees.interns);
-        }
-        if (this.employees.engineers) {
-          console.table(this.employees.engineers);
-        }
-        inquirer
-          .prompt({
-            name: "next",
-            type: "list",
-            message:
-              "Would you like to add an intern, add an engineer, or finish making team?",
-            choices: ["add intern", "add engineer", "finish making team"],
-            validate: (choice) => {
-              return choice
-                ? true
-                : (console.log("Please make a choice"), false);
-            },
-          })
-          .then((output) => {
-            if (output.next === "add intern") {
-              this.internPrompt();
-            } else if (output.next === "add engineer") {
-              this.engineerPrompt();
-            } else {
-              return generateTeam(this.employees);
-            }
+        this.employees.interns.push(intern);
+        console.table(this.employees);
+        this.nextPrompt();
+      });
+  }
+
+  async nextPrompt() {
+    await inquirer
+      .prompt({
+        name: "next",
+        type: "list",
+        message:
+          "Would you like to add an intern, add an engineer, or finish making team?",
+        choices: ["add intern", "add engineer", "finish making team"],
+        validate: (choice) => {
+          return choice ? true : (console.log("Please make a choice"), false);
+        },
+      })
+      .then((output) => {
+        if (output.next === "add intern") {
+          this.internPrompt();
+        } else if (output.next === "add engineer") {
+          this.engineerPrompt();
+        } else {
+          const finalArray = [];
+          finalArray.push(this.employees.manager);
+          if (this.employees.engineers[0]) {
+            finalArray.push(this.employees.engineers);
+          }
+          if (this.employees.interns[0]) {
+            finalArray.push(this.employees.interns);
+          }
+          console.log(finalArray);
+          const pageHTML = generateTeam(finalArray);
+          console.log(pageHTML);
+          fs.writeFile("./dist/index.html", pageHTML, (err) => {
+            if (err) throw new Error(err);
+
+            console.log("Page created! Check index.html in directory");
           });
+        }
       });
   }
 }
 
 const appMenu = new Prompter();
 
-appMenu.startPrompt().then((employeeOutput) => {
-  const pageHTML = employeeOutput;
-
-  fs.writeFile("./dist/index.html", pageHTML, (err) => {
-    if (err) throw new Error(err);
-
-    console.log("Page created! Check index.html in directory");
-  });
-});
+appMenu.startPrompt();
