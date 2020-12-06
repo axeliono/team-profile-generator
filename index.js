@@ -1,19 +1,12 @@
 const fs = require("fs");
-const generateTeam = require("./utils/generated-page");
 const inquirer = require("inquirer");
+const generateCards = require("./src/generated-page");
 const Engineer = require("./lib/Engineer");
 const Intern = require("./lib/Intern");
 const Manager = require("./lib/Manager");
 
+const employees = [];
 class Prompter {
-  constructor() {
-    this.employees = {
-      manager: [],
-      engineers: [],
-      interns: [],
-    };
-  }
-
   async startPrompt() {
     await inquirer
       .prompt([
@@ -39,43 +32,53 @@ class Prompter {
         },
       ])
       .then((output) => {
-        const manager = new Manager(output.managerName, output.email);
-        manager.officeNumber = output.officeNumber;
-        manager.id = output.employeeId;
-        this.employees.manager.push(manager);
+        const manager = new Manager(
+          output.managerName,
+          output.employeeId,
+          output.email,
+          output.officeNumber
+        );
+        employees.push(manager);
+        console.table(employees);
         this.nextPrompt();
       });
   }
 
   async engineerPrompt() {
-    await inquirer.prompt([
-      {
-        name: "name",
-        type: "input",
-        message: "Enter engineer's name",
-      },
-      {
-        name: "id",
-        type: "input",
-        message: "Enter engineer's employee ID",
-      },
-      {
-        name: "email",
-        type: "input",
-        message: "Enter engineer's email address",
-      },
-      {
-        name: "github",
-        type: "input",
-        message: "Enter engineer's github",
-      },
-    ]);
-    const engineer = new Engineer(output.name, output.email);
-    engineer.github = output.github;
-    engineer.id = output.id;
-    this.employees.engineers.push(engineer);
-    console.table(this.employees);
-    this.nextPrompt();
+    await inquirer
+      .prompt([
+        {
+          name: "name",
+          type: "input",
+          message: "Enter engineer's name",
+        },
+        {
+          name: "id",
+          type: "input",
+          message: "Enter engineer's employee ID",
+        },
+        {
+          name: "email",
+          type: "input",
+          message: "Enter engineer's email address",
+        },
+        {
+          name: "github",
+          type: "input",
+          message: "Enter engineer's github",
+        },
+      ])
+      .then((output) => {
+        const engineer = new Engineer(
+          output.name,
+          output.id,
+          output.email,
+          output.github
+        );
+        employees.push(engineer);
+        console.table(employees);
+        this.nextPrompt();
+      });
   }
 
   async internPrompt() {
@@ -103,11 +106,14 @@ class Prompter {
         },
       ])
       .then((output) => {
-        const intern = new Intern(output.name, output.email);
-        intern.id = output.id;
-        intern.school = output.school;
-        this.employees.interns.push(intern);
-        console.table(this.employees);
+        const intern = new Intern(
+          output.name,
+          output.id,
+          output.email,
+          output.school
+        );
+        employees.push(intern);
+        console.table(employees);
         this.nextPrompt();
       });
   }
@@ -130,25 +136,20 @@ class Prompter {
         } else if (output.next === "add engineer") {
           this.engineerPrompt();
         } else {
-          const finalArray = [];
-          finalArray.push(this.employees.manager);
-          if (this.employees.engineers[0]) {
-            finalArray.push(this.employees.engineers);
-          }
-          if (this.employees.interns[0]) {
-            finalArray.push(this.employees.interns);
-          }
-          console.log(finalArray);
-          const pageHTML = generateTeam(finalArray);
-          console.log(pageHTML);
-          fs.writeFile("./dist/index.html", pageHTML, (err) => {
-            if (err) throw new Error(err);
-
-            console.log("Page created! Check index.html in directory");
-          });
+          console.table(employees);
+          generateFile(employees);
         }
       });
   }
+};
+
+const generateFile = (employees) => {
+  const pageHTML = generateCards(employees)
+  fs.writeFile("./dist/page.html", pageHTML, (err) => {
+    if (err) throw new Error(err);
+
+    console.log("Page created! Check index.html in directory");
+  });
 }
 
 const appMenu = new Prompter();
