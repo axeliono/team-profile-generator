@@ -20,7 +20,7 @@ Clone the repository for this project. Install npm inquirer and jest to run the 
 
 ## Test
 
-type <node index.js> into the terminal to begin
+type [node index.js] into the terminal to begin
 
 ## Images/Video
 
