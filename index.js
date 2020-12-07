@@ -14,21 +14,49 @@ class Prompter {
           name: "managerName",
           type: "input",
           message: "Enter team manager's name",
+          validate: (nameInput) => {
+            if (nameInput) {
+              return true;
+            } else {
+              console.log("Please enter a name.");
+              return false;
+            }
+          },
         },
         {
           name: "employeeId",
           type: "input",
           message: "Enter manager's employee ID",
+          validate: (idInput) => {
+            if (idInput) {
+              return true;
+            } else {
+              console.log("You must enter an ID number.");
+              return false;
+            }
+          },
         },
         {
           name: "email",
           type: "input",
           message: "Enter team manager's email address",
+          validate: (emailInput) => {
+            if (emailInput.includes("@") && emailInput.includes(".com")) {
+              return true;
+            } else {
+              console.log("\n You must enter a valid email address.");
+              return false;
+            }
+          },
         },
         {
           name: "officeNumber",
           type: "input",
           message: "Enter manager's office number",
+          validate: function (value) {
+            let valid = !isNaN(parseFloat(value));
+            return valid || "Please enter an office number.";
+          },
         },
       ])
       .then((output) => {
@@ -51,21 +79,37 @@ class Prompter {
           name: "name",
           type: "input",
           message: "Enter engineer's name",
+          validate: (input) => {
+            return input ? true : (console.log("Please enter a name"), false);
+          },
         },
         {
           name: "id",
           type: "input",
           message: "Enter engineer's employee ID",
+          validate: (input) => {
+            return input ? true : (console.log("Please enter an ID"), false);
+          },
         },
         {
           name: "email",
           type: "input",
           message: "Enter engineer's email address",
+          validate: (input) => {
+            return input.includes("@") && input.includes(".com")
+              ? true
+              : (console.log("Enter a valid email"), false);
+          },
         },
         {
           name: "github",
           type: "input",
-          message: "Enter engineer's github",
+          message: "Enter engineer's github username",
+          validate: (input) => {
+            return input
+              ? true
+              : (console.log("Enter valid Github username"), false);
+          },
         },
       ])
       .then((output) => {
@@ -88,21 +132,51 @@ class Prompter {
           name: "name",
           type: "input",
           message: "Enter intern's name",
+          validate: (nameInput) => {
+            if (nameInput) {
+              return true;
+            } else {
+              console.log("You must enter a name.");
+            }
+          },
         },
         {
           name: "id",
           type: "input",
           message: "Enter intern's employee ID",
+          validate: (idInput) => {
+            if (idInput) {
+              return true;
+            } else {
+              console.log("You must enter an ID number.");
+              return false;
+            }
+          },
         },
         {
           name: "email",
           type: "input",
           message: "Enter intern's email address",
+          validate: (emailInput) => {
+            if (emailInput.includes("@") && emailInput.includes(".com")) {
+              return true;
+            } else {
+              console.log("\n You must enter a valid email address.");
+              return false;
+            }
+          },
         },
         {
           name: "school",
           type: "input",
           message: "Enter intern's school",
+          validate: function (value) {
+            if (value) {
+              return true;
+            } else {
+              console.log("Please provide the name of the school.");
+            }
+          },
         },
       ])
       .then((output) => {
@@ -141,16 +215,16 @@ class Prompter {
         }
       });
   }
-};
+}
 
 const generateFile = (employees) => {
-  const pageHTML = generateCards(employees)
+  const pageHTML = generateCards(employees);
   fs.writeFile("./dist/page.html", pageHTML, (err) => {
     if (err) throw new Error(err);
 
     console.log("Page created! Check index.html in directory");
   });
-}
+};
 
 const appMenu = new Prompter();
 
