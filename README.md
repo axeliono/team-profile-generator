@@ -12,7 +12,7 @@
 
 ## Description
 
-A node.js application that allows the user to input employee data and generate a styles HTML file with each employee's information
+A node.js application that allows the user to input employee data and generate a styled (using Bootstrap) HTML file with each employee's information
 
 ## Installation Instructions
 
